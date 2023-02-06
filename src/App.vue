@@ -18,14 +18,8 @@
                :posts="sortedAndSearchedPosts"
                @removePost="removePost"></post-list>
     <div v-else>Идет загрузка...</div>
-    <div class="page_wrapper">
-      <div v-for="pageNumber in totalPage"
-           :key="pageNumber" class="page"
-           :class="{
-              'current_page': pageNumber === page
-            }"
-           @click="changePage(pageNumber)"
-      >{{pageNumber}}</div>
+    <div ref="observer" class="observer">
+      
     </div>
   </div>
 </template>
@@ -49,7 +43,7 @@ export default {
       show: false,
       postLoading: true,
       selectedSort: "",
-      page: 1,
+      page: 0,
       limit: 10,
       totalPage: 0,
       options: [
@@ -60,9 +54,6 @@ export default {
     }
   },
   methods:{
-    changePage(pageNum) {
-      this.page = pageNum;
-    },
     createPost(post) {
       this.posts.push(post);
       this.show = false;
@@ -70,9 +61,9 @@ export default {
     removePost(post) {
       this.posts = this.posts.filter(item => item.id !== post.id)
     },
-    async fetchPosts(){
+    async loadMorePosts(){
       try {
-        this.postLoading = true;
+        this.page += 1;
         const response = await axios.get('https://jsonplaceholder.typicode.com/posts',{
           params: {
             _page: this.page,
@@ -80,18 +71,29 @@ export default {
           }
         });
         this.totalPage = Math.ceil(response.headers['x-total-count'] / this.limit);
-        this.posts = response.data;
+        this.posts = [...this.posts, ...response.data]
+        this.postLoading = false;
       }
       catch (e){
         alert(e);
       }
-      finally {
-        this.postLoading = false;
-      }
     }
   },
   mounted() {
-    this.fetchPosts()
+    this.loadMorePosts();
+
+    const options = {
+      rootMargin: '0px',
+      threshold: 1.0
+    }
+
+    const cb = (entries, observer) => {
+      if (entries[0].isIntersecting && this.page < this.totalPage) {
+        this.loadMorePosts()
+      }
+    }
+    const obs = new IntersectionObserver(cb, options)
+    obs.observe(this.$refs.observer)
   },
   watch: {
     // instead of computed way
@@ -102,9 +104,6 @@ export default {
     // },
     'show': function(newVal) {
       console.log(newVal)
-    },
-    'page': function(){
-      this.fetchPosts();
     }
 
   },
@@ -138,15 +137,8 @@ form {
   display: flex;
   justify-content: space-between;
 }
-.page_wrapper{
-  display: flex;
-  margin-top: 15px;
-}
-.page {
-  border: 1px solid pink;
-padding: 5px;
-}
-.current_page {
-  background-color: dimgray;
+.observer {
+  height: 30px;
+  background: #000;
 }
 </style>
