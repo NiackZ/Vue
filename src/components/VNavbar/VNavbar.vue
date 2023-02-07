@@ -4,6 +4,7 @@
     <div class="navbar_bnts">
       <my-button style="margin-left: 15px" @click="$router.push('/')">Главная</my-button>
       <my-button style="margin-left: 15px" @click="$router.push('/posts')">Посты</my-button>
+      <my-button style="margin-left: 15px" @click="$router.push('/store')">Посты Vuex</my-button>
       <my-button style="margin-left: 15px" @click="$router.push('/about')">О сайте</my-button>
     </div>
   </div>

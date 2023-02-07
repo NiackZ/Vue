@@ -7,19 +7,11 @@
 </template>
 
 <script>
+import MToggle from "@/mixins/MToggle";
+
 export default {
   name: 'v-dialog',
-  props: {
-    show: {
-      type: Boolean,
-      default: false
-    }
-  },
-  methods: {
-    hideModal() {
-      this.$emit('update:show', false)
-    }
-  }
+  mixins: [MToggle]
 }
 </script>
 
